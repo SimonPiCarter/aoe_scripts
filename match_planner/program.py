@@ -42,33 +42,32 @@ class Match:
 
 
 def readPlayers(filename):
-	first = True
+	line = -1
 	options = []
 	players = []
 	with open(filename, newline='') as csvfile:
 		spamreader = csv.reader(csvfile, delimiter=',')
 		for row in spamreader:
-			if first:
-				# read options
+			if line < 0:
+				# read players info
 				index = -1
 				for col in row:
 					if index >= 0:
-						options.append(Option(col, index))
+						players.append(Player(col,[]))
 					index = index + 1
 			else:
-				# read players info
+				# read options info
 				index = -1
-				player_options = []
-				name = ""
+				option = None
 				for col in row:
 					if index >= 0:
 						if col != "":
-							player_options.append(options[index])
+							players[index].options.append(option)
 					else:
-						name = col
+						option = Option(col, line)
+						options.append(option)
 					index = index + 1
-				players.append(Player(name, player_options))
-			first = False
+			line = line + 1
 			print(', '.join(row))
 	return options, players
 
@@ -99,12 +98,23 @@ def allocateMatches(matches):
 	variables = []
 
 	for match in matches:
-		options = []
+		options = set()
+		indexOptions = []
+		first = True
 		for player in match.players:
-			for option in player.options:
-				options.append(option.index)
-		match.var = model.NewIntVarFromDomain(cp_model.Domain.FromValues(options), match.name())
-		variables.append(match.var)
+			if first:
+				options = set(player.options)
+			else:
+				options = options.intersection(set(player.options))
+			first = False
+		for option in options:
+			indexOptions.append(option.index)
+
+		if len(indexOptions) == 0:
+			print("Error match %s is ignored because no matching availability" % match.name())
+		else:
+			match.var = model.NewIntVarFromDomain(cp_model.Domain.FromValues(indexOptions), match.name())
+			variables.append(match.var)
 
 	model.AddAllDifferent(variables)
 
@@ -112,15 +122,31 @@ def allocateMatches(matches):
 	solver = cp_model.CpSolver()
 	status = solver.Solve(model)
 
-	for match in matches:
-		match.option = solver.Value(match.var)
+	if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
+		for match in matches:
+			match.option = solver.Value(match.var)
+
 
 options, players = readPlayers("data_player.csv")
 matches = readMatches("data_match.csv", players)
 
+for player in players:
+	print("%s : " % player.name)
+	for option in player.options:
+		print("\t - %s %i" % (option.name, option.index))
+
 allocateMatches(matches)
 
+def matchKey(a):
+	if a.option is not None:
+		return a.option
+	else:
+		return 0
+
+matches.sort(key=matchKey)
+
 for match in matches:
-		print("%s : %s" % (match.name() , options[match.option].name))
-
-
+	if match.option is not None:
+		print("%s\t : %s" % (options[match.option].name, match.name()))
+	else:
+		print("%s : undefined" % match.name())

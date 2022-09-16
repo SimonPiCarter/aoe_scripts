@@ -1,4 +1,15 @@
-nom,lundi 19h,lundi 20h30,mardi 19h
-Carter,x,,x
-Mimon,x,x,
-Ourk,x,x,x
+option,Carter,Mimon,Ourk,Mulfar,Trakor,AceSolid,Le grand mugul,Elyona
+lundi 19h,x,x,x,,,,,
+lundi 21h,,x,x,x,,x,,x
+mardi 19h,x,,x,,,x,,x
+mardi 21h,x,,,x,,,,x
+mercredi 19h,x,,,,x,x,x,x
+mercredi 21h,x,x,,x,x,,x,x
+jeudi 19h,x,,,x,,x,x,x
+jeudi 21h,,x,x,x,x,,x,x
+vendredi 19h,x,,x,x,,x,,
+vendredi 21h,x,x,,x,x,x,x,x
+samedi 19h,x,,x,x,x,x,x,x
+samedi 21h,,x,x,x,x,x,x,x
+dimanche 19h,x,,x,x,,x,x,x
+dimanche 21h,x,x,,,x,,,
